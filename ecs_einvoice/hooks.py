@@ -2,12 +2,191 @@ from . import __version__ as app_version
 
 app_name = "ecs_einvoice"
 app_title = "Ecs Einvoice"
-app_publisher = "ERP Cloud Systems"
-app_description = "Custom App For E-Invoice"
+app_publisher = "ERPCloud.Systems"
+app_description = "Einvoice App"
 app_icon = "octicon octicon-file-directory"
 app_color = "grey"
 app_email = "info@erpcloud.systems"
 app_license = "MIT"
+
+
+doctype_js = {
+	"Sales Invoice": "ecs_einvoice/sales_invoice/sales_invoice.js",
+	"Item Tax Template": "ecs_einvoice/item_tax_template/item_tax_template.js"
+}
+
+scheduler_events = {
+    "cron": {
+        "*/55 * * * *": [
+            "ecs_einvoice.api.login"
+        ]
+    },
+	"hourly": [
+		"ecs_einvoice.sales_invoice.sales_invoice.update_uuid_status"
+	],
+}
+
+doc_events = {
+"Quotation": {
+	"onload": "ecs_einvoice.event_triggers.quot_onload",
+	"before_validate": "ecs_einvoice.event_triggers.quot_before_validate",
+	"validate": "ecs_einvoice.event_triggers.quot_validate",
+	"on_submit": "ecs_einvoice.event_triggers.quot_on_submit",
+	"on_cancel": "ecs_einvoice.event_triggers.quot_on_cancel",
+	"on_update_after_submit": "ecs_einvoice.event_triggers.quot_on_update_after_submit",
+	"before_save": "ecs_einvoice.event_triggers.quot_before_save",
+	"before_cancel": "ecs_einvoice.event_triggers.quot_before_cancel",
+	"on_update": "ecs_einvoice.event_triggers.quot_on_update",
+},
+	"Sales Invoice": {
+	"onload": "ecs_einvoice.event_triggers.siv_onload",
+	"before_validate": "ecs_einvoice.event_triggers.siv_before_validate",
+	"validate": "ecs_einvoice.event_triggers.siv_validate",
+	"on_submit": "ecs_einvoice.event_triggers.siv_on_submit",
+	"on_cancel": "ecs_einvoice.event_triggers.siv_on_cancel",
+	"on_update_after_submit": "ecs_einvoice.event_triggers.siv_on_update_after_submit",
+	"before_save": "ecs_einvoice.event_triggers.siv_before_save",
+	"before_cancel": "ecs_einvoice.event_triggers.siv_before_cancel",
+	"on_update": "ecs_einvoice.event_triggers.siv_on_update",
+},
+	"Sales Order": {
+		"onload": "ecs_einvoice.event_triggers.so_onload",
+		"before_validate": "ecs_einvoice.event_triggers.so_before_validate",
+		"validate": "ecs_einvoice.event_triggers.so_validate",
+		"on_submit": "ecs_einvoice.event_triggers.so_on_submit",
+		"on_cancel": "ecs_einvoice.event_triggers.so_on_cancel",
+		"on_update_after_submit": "ecs_einvoice.event_triggers.so_on_update_after_submit",
+		"before_save": "ecs_einvoice.event_triggers.so_before_save",
+		"before_cancel": "ecs_einvoice.event_triggers.so_before_cancel",
+		"on_update": "ecs_einvoice.event_triggers.so_on_update",
+
+},
+	"Material Request": {
+		"onload": "ecs_einvoice.event_triggers.mr_onload",
+		"before_validate": "ecs_einvoice.event_triggers.mr_before_validate",
+		"validate": "ecs_einvoice.event_triggers.mr_validate",
+		"on_submit": "ecs_einvoice.event_triggers.mr_on_submit",
+		"on_cancel": "ecs_einvoice.event_triggers.mr_on_cancel",
+		"on_update_after_submit": "ecs_einvoice.event_triggers.mr_on_update_after_submit",
+		"before_save": "ecs_einvoice.event_triggers.mr_before_save",
+		"before_cancel": "ecs_einvoice.event_triggers.mr_before_cancel",
+		"on_update": "ecs_einvoice.event_triggers.mr_on_update",
+},
+	"Stock Entry": {
+		"onload": "ecs_einvoice.event_triggers.ste_onload",
+		"before_validate": "ecs_einvoice.event_triggers.ste_before_validate",
+		"validate": "ecs_einvoice.event_triggers.ste_validate",
+		"on_submit": "ecs_einvoice.event_triggers.ste_on_submit",
+		"on_cancel": "ecs_einvoice.event_triggers.ste_on_cancel",
+		"on_update_after_submit": "ecs_einvoice.event_triggers.ste_on_update_after_submit",
+		"before_save": "ecs_einvoice.event_triggers.ste_before_save",
+		"before_cancel": "ecs_einvoice.event_triggers.ste_before_cancel",
+		"on_update": "ecs_einvoice.event_triggers.ste_on_update",
+},
+	"Delivery Note": {
+		"onload": "ecs_einvoice.event_triggers.dn_onload",
+		"before_validate": "ecs_einvoice.event_triggers.dn_before_validate",
+		"validate": "ecs_einvoice.event_triggers.dn_validate",
+		"on_submit": "ecs_einvoice.event_triggers.dn_on_submit",
+		"on_cancel": "ecs_einvoice.event_triggers.dn_on_cancel",
+		"on_update_after_submit": "ecs_einvoice.event_triggers.dn_on_update_after_submit",
+		"before_save": "ecs_einvoice.event_triggers.dn_before_save",
+		"before_cancel": "ecs_einvoice.event_triggers.dn_before_cancel",
+		"on_update": "ecs_einvoice.event_triggers.dn_on_update",
+},
+	"Purchase Order": {
+		"onload": "ecs_einvoice.event_triggers.po_onload",
+		"before_validate": "ecs_einvoice.event_triggers.po_before_validate",
+		"validate": "ecs_einvoice.event_triggers.po_validate",
+		"on_submit": "ecs_einvoice.event_triggers.po_on_submit",
+		"on_cancel": "ecs_einvoice.event_triggers.po_on_cancel",
+		"on_update_after_submit": "ecs_einvoice.event_triggers.po_on_update_after_submit",
+		"before_save": "ecs_einvoice.event_triggers.po_before_save",
+		"before_cancel": "ecs_einvoice.event_triggers.po_before_cancel",
+		"on_update": "ecs_einvoice.event_triggers.po_on_update",
+},
+	"Purchase Receipt": {
+		"onload": "ecs_einvoice.event_triggers.pr_onload",
+		"before_validate": "ecs_einvoice.event_triggers.pr_before_validate",
+		"validate": "ecs_einvoice.event_triggers.pr_validate",
+		"on_submit": "ecs_einvoice.event_triggers.pr_on_submit",
+		"on_cancel": "ecs_einvoice.event_triggers.pr_on_cancel",
+		"on_update_after_submit": "ecs_einvoice.event_triggers.pr_on_update_after_submit",
+		"before_save": "ecs_einvoice.event_triggers.pr_before_save",
+		"before_cancel": "ecs_einvoice.event_triggers.pr_before_cancel",
+		"on_update": "ecs_einvoice.event_triggers.pr_on_update",
+},
+	"Purchase Invoice": {
+		"onload": "ecs_einvoice.event_triggers.piv_onload",
+		"before_validate": "ecs_einvoice.event_triggers.piv_before_validate",
+		"validate": "ecs_einvoice.event_triggers.piv_validate",
+		"on_submit": "ecs_einvoice.event_triggers.piv_on_submit",
+		"on_cancel": "ecs_einvoice.event_triggers.piv_on_cancel",
+		"on_update_after_submit": "ecs_einvoice.event_triggers.piv_on_update_after_submit",
+		"before_save": "ecs_einvoice.event_triggers.piv_before_save",
+		"before_cancel": "ecs_einvoice.event_triggers.piv_before_cancel",
+		"on_update": "ecs_einvoice.event_triggers.piv_on_update",
+},
+	"Payment Entry": {
+		"before_insert": "ecs_einvoice.event_triggers.pe_before_insert",
+		"onload": "ecs_einvoice.event_triggers.pe_onload",
+		"before_validate": "ecs_einvoice.event_triggers.pe_before_validate",
+		"validate": "ecs_einvoice.event_triggers.pe_validate",
+		"on_submit": "ecs_einvoice.event_triggers.pe_on_submit",
+		"on_cancel": "ecs_einvoice.event_triggers.pe_on_cancel",
+		"on_update_after_submit": "ecs_einvoice.event_triggers.pe_on_update_after_submit",
+		"before_save": "ecs_einvoice.event_triggers.pe_before_save",
+		"before_cancel": "ecs_einvoice.event_triggers.pe_before_cancel",
+		"on_update": "ecs_einvoice.event_triggers.pe_on_update",
+},
+	"Blanket Order": {
+		"onload": "ecs_einvoice.event_triggers.blank_onload",
+		"before_validate": "ecs_einvoice.event_triggers.blank_before_validate",
+		"validate": "ecs_einvoice.event_triggers.blank_validate",
+		"on_submit": "ecs_einvoice.event_triggers.blank_on_submit",
+		"on_cancel": "ecs_einvoice.event_triggers.blank_on_cancel",
+		"on_update_after_submit": "ecs_einvoice.event_triggers.blank_on_update_after_submit",
+		"before_save": "ecs_einvoice.event_triggers.blank_before_save",
+		"before_cancel": "ecs_einvoice.event_triggers.blank_before_cancel",
+		"on_update": "ecs_einvoice.event_triggers.blank_on_update",
+},
+	"Expense Claim": {
+		"onload": "ecs_einvoice.event_triggers.excl_onload",
+		"before_validate": "ecs_einvoice.event_triggers.excl_before_validate",
+		"validate": "ecs_einvoice.event_triggers.excl_validate",
+		"on_submit": "ecs_einvoice.event_triggers.excl_on_submit",
+		"on_cancel": "ecs_einvoice.event_triggers.excl_on_cancel",
+		"on_update_after_submit": "ecs_einvoice.event_triggers.excl_on_update_after_submit",
+		"before_save": "ecs_einvoice.event_triggers.excl_before_save",
+		"before_cancel": "ecs_einvoice.event_triggers.excl_before_cancel",
+		"on_update": "ecs_einvoice.event_triggers.excl_on_update",
+},
+"Employee Advance": {
+		"onload": "ecs_einvoice.event_triggers.emad_onload",
+		"before_validate": "ecs_einvoice.event_triggers.emad_before_validate",
+		"validate": "ecs_einvoice.event_triggers.emad_validate",
+		"on_submit": "ecs_einvoice.event_triggers.emad_on_submit",
+		"on_cancel": "ecs_einvoice.event_triggers.emad_on_cancel",
+		"on_update_after_submit": "ecs_einvoice.event_triggers.emad_on_update_after_submit",
+		"before_save": "ecs_einvoice.event_triggers.emad_before_save",
+		"before_cancel": "ecs_einvoice.event_triggers.emad_before_cancel",
+		"on_update": "ecs_einvoice.event_triggers.emad_on_update",
+},
+"Loan": {
+		"onload": "ecs_einvoice.event_triggers.loan_onload",
+		"before_validate": "ecs_einvoice.event_triggers.loan_before_validate",
+		"validate": "ecs_einvoice.event_triggers.loan_validate",
+		"on_submit": "ecs_einvoice.event_triggers.loan_on_submit",
+		"on_cancel": "ecs_einvoice.event_triggers.loan_on_cancel",
+		"on_update_after_submit": "ecs_einvoice.event_triggers.loan_on_update_after_submit",
+		"before_save": "ecs_einvoice.event_triggers.loan_before_save",
+		"before_cancel": "ecs_einvoice.event_triggers.loan_before_cancel",
+		"on_update": "ecs_einvoice.event_triggers.loan_on_update",
+},
+}
+
+
+#app_include_js = ["/assets/site_management/js/document.js"]
 
 # Includes in <head>
 # ------------------
@@ -52,6 +231,15 @@ app_license = "MIT"
 
 # automatically create page for each record of this doctype
 # website_generators = ["Web Page"]
+
+# Jinja
+# ----------
+
+# add methods and filters to jinja environment
+# jinja = {
+# 	"methods": "ecs_einvoice.utils.jinja_methods",
+# 	"filters": "ecs_einvoice.utils.jinja_filters"
+# }
 
 # Installation
 # ------------
@@ -105,7 +293,6 @@ app_license = "MIT"
 
 # Scheduled Tasks
 # ---------------
-
 # scheduler_events = {
 # 	"all": [
 # 		"ecs_einvoice.tasks.all"
@@ -114,14 +301,14 @@ app_license = "MIT"
 # 		"ecs_einvoice.tasks.daily"
 # 	],
 # 	"hourly": [
-# 		"ecs_einvoice.tasks.hourly"
+# 		"ecs_einvoice.ecs_einvoice.hourly"
 # 	],
 # 	"weekly": [
 # 		"ecs_einvoice.tasks.weekly"
-# 	]
+# 	],
 # 	"monthly": [
 # 		"ecs_einvoice.tasks.monthly"
-# 	]
+# 	],
 # }
 
 # Testing
@@ -151,26 +338,26 @@ app_license = "MIT"
 # User Data Protection
 # --------------------
 
-user_data_fields = [
-	{
-		"doctype": "{doctype_1}",
-		"filter_by": "{filter_by}",
-		"redact_fields": ["{field_1}", "{field_2}"],
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_2}",
-		"filter_by": "{filter_by}",
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_3}",
-		"strict": False,
-	},
-	{
-		"doctype": "{doctype_4}"
-	}
-]
+# user_data_fields = [
+# 	{
+# 		"doctype": "{doctype_1}",
+# 		"filter_by": "{filter_by}",
+# 		"redact_fields": ["{field_1}", "{field_2}"],
+# 		"partial": 1,
+# 	},
+# 	{
+# 		"doctype": "{doctype_2}",
+# 		"filter_by": "{filter_by}",
+# 		"partial": 1,
+# 	},
+# 	{
+# 		"doctype": "{doctype_3}",
+# 		"strict": False,
+# 	},
+# 	{
+# 		"doctype": "{doctype_4}"
+# 	}
+# ]
 
 # Authentication and authorization
 # --------------------------------
@@ -179,10 +366,3 @@ user_data_fields = [
 # 	"ecs_einvoice.auth.validate"
 # ]
 
-# Translation
-# --------------------------------
-
-# Make link fields search translated document names for these DocTypes
-# Recommended only for DocTypes which have limited documents with untranslated names
-# For example: Role, Gender, etc.
-# translated_search_doctypes = []
