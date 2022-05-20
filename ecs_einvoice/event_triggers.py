@@ -185,75 +185,88 @@ def dn_on_update(doc, method=None):
 
 ################ Sales Invoice
 
-
 @frappe.whitelist()
 def siv_onload(doc, method=None):
     pass
 
-
 @frappe.whitelist()
 def siv_before_insert(doc, method=None):
-    pass
-
+    enable = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'enable')
+    signature_type = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'signature_type')
+    doc.e_invoice = enable
+    doc.signature_type = signature_type
+    doc.against_uuid = ""
+    doc.sign = 0
+    doc.e_signed = 0
+    doc.signature = ""
+    doc.uuid = ""
+    doc.eta_status = ""
+    doc.submission_uuid = ""
+    doc.long_id = ""
+    doc.eta_link = ""
+    doc.eta_invoice_link = ""
 
 @frappe.whitelist()
 def siv_after_insert(doc, method=None):
     pass
-
-
 @frappe.whitelist()
 def siv_before_validate(doc, method=None):
     pass
-
-
 @frappe.whitelist()
 def siv_validate(doc, method=None):
     for x in doc.items:
         x.tax_code = frappe.db.get_value("Item Tax Template", x.item_tax_template, "tax_code")
         x.tax_subtype_code = frappe.db.get_value("Item Tax Template", x.item_tax_template, "tax_subtype_code")
     enable = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'enable')
-    doc.s_invoice = enable
-
+    signature_type = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'signature_type')
+    doc.e_invoice = enable
+    doc.signature_type = signature_type
 
 @frappe.whitelist()
 def siv_on_submit(doc, method=None):
-    posting_date = doc.posting_date
-    allowed_days = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'allowed_days')
-    if posting_date < add_to_date(utils.today(), days=-(allowed_days), as_string=True):
-        frappe.throw(
-            "You are allowed only to submit past dated invoices for {0} days before today".format(allowed_days))
-
+    enable = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'enable')
+    if enable == 1:
+        posting_date = doc.posting_date
+        allowed_days = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'allowed_days')
+        if posting_date < add_to_date(utils.today(), days=-(allowed_days), as_string=True):
+            frappe.throw(
+                "You are allowed only to submit past dated invoices for {0} days before today".format(allowed_days))
+    '''
     linking_with_eta = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'linking_with_eta')
-    if linking_with_eta == "Automatically":
+    enable = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'enable')
+    if linking_with_eta == "Automatically" and enable == 1:
         name = doc.name
         send_invoice(name)
         sleep(1)
         get_invoice(name)
         doc.reload()
+    
 
     user = frappe.session.user
     lang = frappe.db.get_value("User", {'name': user}, "language")
     if doc.eta_status != "Invalid":
-        doc.eta_remarks = " تم ترحيل الفاتورة إلى نظام مصلحة الضرائب بنجاح "
         if lang == "ar":
             frappe.msgprint(" تم ترحيل الفاتورة إلى نظام مصلحة الضرائب بنجاح ")
         else:
             frappe.msgprint(" Invoice Has Been Submitted Successfully To ETA ")
 
     if doc.eta_status == "Invalid":
-        doc.eta_remarks = " حدث خطأ في ترحيل الفاتورة إلى نظام مصلحة الضرائب "
         if lang == "ar":
             frappe.msgprint(" حدث خطأ في ترحيل الفاتورة إلى نظام مصلحة الضرائب ")
         else:
             frappe.msgprint(" There Is A Problem In Submitting The Invoice To ETA ")
-
+    '''
 
 @frappe.whitelist()
 def siv_on_cancel(doc, method=None):
+    pass
+    '''
     linking_with_eta = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'linking_with_eta')
-    if linking_with_eta == "Automatically":
+    enable = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'enable')
+    if linking_with_eta == "Automatically" and enable == 1:
         name = doc.name
         cancel_invoice(name)
+    '''
 
 
 @frappe.whitelist()

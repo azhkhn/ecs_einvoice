@@ -40,6 +40,8 @@ doc_events = {
 },
 	"Sales Invoice": {
 	"onload": "ecs_einvoice.event_triggers.siv_onload",
+	"before_insert": "ecs_einvoice.event_triggers.siv_before_insert",
+	"after_insert": "ecs_einvoice.event_triggers.siv_after_insert",
 	"before_validate": "ecs_einvoice.event_triggers.siv_before_validate",
 	"validate": "ecs_einvoice.event_triggers.siv_validate",
 	"on_submit": "ecs_einvoice.event_triggers.siv_on_submit",
