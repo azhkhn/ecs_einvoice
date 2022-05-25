@@ -51,3 +51,19 @@ frappe.ui.form.on("Sales Invoice", "send_to_eta", function(frm) {
         var myWin = window.open(cur_frm.doc.eta_invoice_link);	});
   }
 });
+
+  frappe.ui.form.on("Sales Invoice", "print_invoice", function(frm) {
+    frappe.call({
+      method: "ecs_einvoice.ecs_einvoice.sales_invoice.sales_invoice.pdf",
+      args: {
+                'name': frm.doc.name
+			},
+      callback: function(r) {
+          }
+    });
+   /* const myTimeout = setTimeout(Reload, 1000);
+    function Reload() {
+  frm.reload_doc()
+  }
+  */
+  });
