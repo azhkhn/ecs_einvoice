@@ -1,0 +1,253 @@
+{
+ "actions": [],
+ "autoname": "field:company",
+ "creation": "2022-05-19 13:21:44.590493",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "e_invoice_settings_section",
+  "linking_with_eta",
+  "environment",
+  "signature_type",
+  "allowed_days",
+  "api_base_url",
+  "api_cancellation_url",
+  "api_document_url",
+  "column_break_6",
+  "id_server_base_url",
+  "client_id",
+  "client_secret",
+  "internal_user_key",
+  "internal_user_secret",
+  "internal_url",
+  "enable",
+  "section_break_16",
+  "generated_access_token",
+  "company_information_section",
+  "company",
+  "company_type",
+  "tax_id",
+  "activity_code",
+  "branch_id",
+  "country",
+  "additional_info",
+  "column_break_24",
+  "governate",
+  "region_city",
+  "street",
+  "building_number",
+  "postal_code",
+  "floor",
+  "room",
+  "landmark"
+ ],
+ "fields": [
+  {
+   "fieldname": "e_invoice_settings_section",
+   "fieldtype": "Section Break",
+   "label": "E-Invoice Settings"
+  },
+  {
+   "default": "Manually",
+   "description": "Send / Cancel Invoices Automatically Or Manually",
+   "fieldname": "linking_with_eta",
+   "fieldtype": "Select",
+   "label": "Linking With ETA",
+   "options": "Automatically\nManually",
+   "read_only": 1
+  },
+  {
+   "fieldname": "environment",
+   "fieldtype": "Select",
+   "label": "Environment",
+   "options": "Pre-Production\nProduction"
+  },
+  {
+   "fieldname": "signature_type",
+   "fieldtype": "Select",
+   "label": "Signature Type",
+   "options": "With Signature\nWithout Signature"
+  },
+  {
+   "fieldname": "allowed_days",
+   "fieldtype": "Int",
+   "label": "Allowed Days"
+  },
+  {
+   "fieldname": "api_base_url",
+   "fieldtype": "Data",
+   "label": "API Base URL"
+  },
+  {
+   "fieldname": "api_cancellation_url",
+   "fieldtype": "Data",
+   "label": "API Cancellation URL"
+  },
+  {
+   "fieldname": "api_document_url",
+   "fieldtype": "Data",
+   "label": "API Document URL"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "id_server_base_url",
+   "fieldtype": "Data",
+   "label": "ID Server Base URL"
+  },
+  {
+   "fieldname": "client_id",
+   "fieldtype": "Data",
+   "label": "Client ID"
+  },
+  {
+   "fieldname": "client_secret",
+   "fieldtype": "Data",
+   "label": "Client Secret"
+  },
+  {
+   "fieldname": "internal_user_key",
+   "fieldtype": "Data",
+   "label": "Internal User Key"
+  },
+  {
+   "fieldname": "internal_user_secret",
+   "fieldtype": "Data",
+   "label": "Internal User Secret"
+  },
+  {
+   "fieldname": "internal_url",
+   "fieldtype": "Data",
+   "label": "Internal URL"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable",
+   "fieldtype": "Check",
+   "label": "Enable"
+  },
+  {
+   "fieldname": "section_break_16",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "generated_access_token",
+   "fieldtype": "Small Text",
+   "label": "Generated Access Token",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company_information_section",
+   "fieldtype": "Section Break",
+   "label": "Company Information"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "unique": 1
+  },
+  {
+   "fieldname": "company_type",
+   "fieldtype": "Data",
+   "label": "Company Type"
+  },
+  {
+   "fieldname": "tax_id",
+   "fieldtype": "Data",
+   "label": "Tax ID"
+  },
+  {
+   "fieldname": "activity_code",
+   "fieldtype": "Data",
+   "label": "Activity Code"
+  },
+  {
+   "fieldname": "branch_id",
+   "fieldtype": "Data",
+   "label": "Branch ID"
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "additional_info",
+   "fieldtype": "Small Text",
+   "label": "Additional Info"
+  },
+  {
+   "fieldname": "column_break_24",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "governate",
+   "fieldtype": "Data",
+   "label": "Governate"
+  },
+  {
+   "fieldname": "region_city",
+   "fieldtype": "Data",
+   "label": "Region City"
+  },
+  {
+   "fieldname": "street",
+   "fieldtype": "Data",
+   "label": "Street"
+  },
+  {
+   "fieldname": "building_number",
+   "fieldtype": "Data",
+   "label": "Building Number"
+  },
+  {
+   "fieldname": "postal_code",
+   "fieldtype": "Data",
+   "label": "Postal Code"
+  },
+  {
+   "fieldname": "floor",
+   "fieldtype": "Data",
+   "label": "Floor"
+  },
+  {
+   "fieldname": "room",
+   "fieldtype": "Data",
+   "label": "Room"
+  },
+  {
+   "fieldname": "landmark",
+   "fieldtype": "Data",
+   "label": "Landmark"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2022-05-25 23:13:42.918973",
+ "modified_by": "Administrator",
+ "module": "Ecs Einvoice",
+ "name": "EInvoice Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
+}
