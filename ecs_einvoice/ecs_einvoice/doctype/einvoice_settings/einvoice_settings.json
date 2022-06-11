@@ -26,6 +26,7 @@
   "generated_access_token",
   "company_information_section",
   "company",
+  "company_name",
   "company_type",
   "tax_id",
   "activity_code",
@@ -224,11 +225,16 @@
    "fieldname": "landmark",
    "fieldtype": "Data",
    "label": "Landmark"
+  },
+  {
+   "fieldname": "company_name",
+   "fieldtype": "Data",
+   "label": "Company Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-05-25 23:13:42.918973",
+ "modified": "2022-06-11 18:14:08.091015",
  "modified_by": "Administrator",
  "module": "Ecs Einvoice",
  "name": "EInvoice Settings",

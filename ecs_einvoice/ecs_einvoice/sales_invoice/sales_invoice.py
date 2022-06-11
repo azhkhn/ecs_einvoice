@@ -32,7 +32,7 @@ def send_invoice(name):
         signature_type = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'signature_type')
         activity_code = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'activity_code')
         company_type = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'company_type')
-        company = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'company')
+        company = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'company_name')
         tax_id = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'tax_id')
         branch_id = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'branch_id')
         country = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'country')
@@ -612,7 +612,7 @@ def multi_get_invoice_to_sign(data):
             signature_type = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'signature_type')
             activity_code = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'activity_code')
             company_type = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'company_type')
-            company = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'company')
+            company = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'company_name        ')
             tax_id = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'tax_id')
             branch_id = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'branch_id')
             country = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'country')
@@ -635,7 +635,7 @@ def multi_get_invoice_to_sign(data):
                 s_invoice = frappe.get_doc("Sales Invoice", data[i])
                 ## Enviroment
                 if signature_type == "Without Signature":
-                    documentTypeVersion = "0.9"
+                    documentTypeVersion = "0.9"         
                 else:
                     documentTypeVersion = "1.0"
                 temp["documentTypeVersion"] = documentTypeVersion
@@ -935,7 +935,7 @@ def get_invoice_details(**kwargs):
     signature_type = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'signature_type')
     activity_code = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'activity_code')
     company_type = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'company_type')
-    company = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'company')
+    company = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'company_name')
     tax_id = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'tax_id')
     branch_id = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'branch_id')
     country = frappe.db.get_value('EInvoice Settings', {'company': s_invoice.company}, 'country')
@@ -1028,50 +1028,34 @@ def get_invoice_details(**kwargs):
     # Invoice Data
 
     temp["internalID"] = kwargs['name']
-    # temp["dateTimeIssued"] = invoice.posting_date.strftime('%Y-%m-%dT%H:%M:%SZ') #str(invoice.posting_date) + "T" + str(invoice.posting_time + timedelta(hours=-2)) + "Z"
-
-    # 2015-02-13T13:15:00Z#
-    # "2022-03-11T02:04:45Z"#str(invoice.creation)
-
-    compared_time = "12:00:00.0"
-    # issued_time = datetime(invoice.posting_time)
-    # issued_time1 = str(invoice.posting_time)
-    # if datetime.strptime(issued_time1, '%H:%M:%S.%f') < datetime.strptime(compared_time, '%H:%M:%S.%f'):
-    #    temp["dateTimeIssued"] = str(add_to_date(invoice.posting_date, days=0)) + "T0" + datetime.strptime(issued_time, '%H:%M:%S')+ "Z"
-    # else:
-
-
     temp["purchaseOrderReference"] = invoice.po_no
     temp["purchaseOrderDescription"] = str(invoice.po_date)
-    # so = frappe.db.sql(""" select sales_order from `tabSales Invoice Item` where parent = '{parent}'  """.format(parent=invoice.name),as_dict=0)
-    # if so :
-    #    temp["salesOrderReference"] = so[0][0]
-    #    so_detail = frappe.get_doc("Sales Order", so[0][0])
-    #    temp["salesOrderDescription"] = str(so_detail.transaction_date)
-    temp["salesOrderReference"] = "Null"
-    temp["salesOrderDescription"] = "Null"
-    temp["proformaInvoiceNumber"] = "Null"
+    temp["salesOrderReference"] = ""
+    temp["salesOrderDescription"] = ""
+    temp["proformaInvoiceNumber"] = ""
 
-    temp["payment"] = {
-        "bankName": "SomeValue",
-        "bankAddress": "SomeValue",
-        "bankAccountNo": "SomeValue",
+    temp.update({"payment": {
+        "bankName": "",
+        "bankAddress": "",
+        "bankAccountNo": "",
         "bankAccountIBAN": "",
         "swiftCode": "",
-        "terms": "SomeValue"
-    },
-    temp["delivery"] = {
-        "approach": "SomeValue",
-        "packaging": "SomeValue",
+        "terms": ""
+        },
+    })
+
+    temp.update({"delivery": {
+        "approach": "",
+        "packaging": "",
         "dateValidity": str(add_to_date(invoice.posting_date, days=0)) + "T" + datetime.now().strftime("%H:%M:%S") + "Z",
-        "exportPort": "SomeValue",
+        "exportPort": "",
         "countryOfOrigin": "EG",
         "grossWeight": 0,
         "netWeight": 0,
-        "terms": "SomeValue"
-    },
-
-
+        "terms": ""
+        },
+    })
+    
     invoiceLines = []
     for x in invoice.items:
         item_tax_rate = frappe.db.sql(
@@ -1094,7 +1078,9 @@ def get_invoice_details(**kwargs):
             "itemsDiscount": 0,  # round((x.discount_amount * x.qty), 5),
             "unitValue": {
                 "currencySold": invoice.currency,
-                "amountEGP": round(salesTotal, 5)
+                "amountEGP": round(salesTotal, 5),
+                "amountSold": round(salesTotal, 5),
+                "currencyExchangeRate": 1
             },
             "discount": {
                 "rate": round(x.discount_percentage, 5),
@@ -1119,107 +1105,53 @@ def get_invoice_details(**kwargs):
         total_discount += (z.discount_amount * z.qty)
         net_amount += round(z.amount, 5)
 
-    temp["netAmount"] = net_amount
-    temp["totalAmount"] = round(invoice.grand_total, 5)
     temp["totalDiscountAmount"] = round(total_discount, 5)
-
-    temp["extraDiscountAmount"] = round(invoice.discount_amount, 5)
-    temp["totalItemsDiscountAmount"] = 0  # round(total_discount, 5)
-
     new_total = 0
     for v in invoice.items:
         new_total += (v.qty * v.rate) + (v.qty * v.discount_amount)
 
     temp["totalSalesAmount"] = round(new_total, 5)
 
-    if invoice.is_return == 1:
-        invoiceLines = []
-        for x in invoice.items:
-            item_tax_rate = frappe.db.sql(
-                """ select tax_rate from `tabItem Tax Template Detail` where parent = '{parent}' """.format(
-                    parent=x.item_tax_template), as_dict=0)
-            salesTotal = x.rate + x.discount_amount
-            invoiceLines.append({
-                "description": x.item_name,
-                "itemType": x.eta_item_type,
-                "itemCode": x.eta_item_code,
-                "unitType": x.uom,
-                "quantity": x.qty * -1,
-                "internalCode": x.item_code,
+    temp["netAmount"] = net_amount
 
-                "salesTotal": round((salesTotal * x.qty * -1), 5),
-                "total": round(((x.rate + (x.rate * item_tax_rate[0][0] / 100)) * x.qty * -1), 5),
-                "valueDifference": 0.00,
-                "totalTaxableFees": 0,
-                "netTotal": round(x.amount * -1, 5),
-                "itemsDiscount": 0,  # round((x.discount_amount * x.qty), 5),
-                "unitValue": {
-                    "currencySold": invoice.currency,
-                    "amountEGP": round(salesTotal, 5)
-                },
-                "discount": {
-                    "rate": round(x.discount_percentage, 5),
-                    "amount": round((x.discount_amount * x.qty * -1), 5)
-                },
-                "taxableItems": [
-                    {
-                        "taxType": x.tax_code,
-                        "amount": round((x.amount * -1 * item_tax_rate[0][0] / 100), 5),
-                        "subType": x.tax_subtype_code,
-                        "rate": item_tax_rate[0][0]
-                    },
-                ]
-            })
+    total_taxes = 0
+    for y in invoice.items:
+        item_tax_rate = frappe.db.sql(
+            """ select tax_rate from `tabItem Tax Template Detail` where parent = '{parent}' """.format(
+                parent=y.item_tax_template), as_dict=0)
+        total_taxes += round((y.amount * item_tax_rate[0][0] / 100), 5)
 
-        temp["invoiceLines"] = invoiceLines
+    ss = []
 
-        total_taxes = 0
-        for y in invoice.items:
-            item_tax_rate = frappe.db.sql(
-                """ select tax_rate from `tabItem Tax Template Detail` where parent = '{parent}' """.format(
-                    parent=y.item_tax_template), as_dict=0)
-            total_taxes += round((y.amount * -1 * item_tax_rate[0][0] / 100), 5)
+    tax_type = frappe.db.sql(
+        """ select distinct tax_code, item_tax_template from `tabSales Invoice Item` where parent = '{parent}' """.format(
+            parent=invoice.name), as_dict=1)
 
-        ss = []
+    for w in tax_type:
+        tax = frappe.db.sql(
+            """ select tax_rate from `tabItem Tax Template Detail` where parent = '{parent}' """.format(
+                parent=w.item_tax_template), as_dict=0)
+        sum_tax = frappe.db.sql(
+            """ select sum(amount) from `tabSales Invoice Item` where parent = '{parent}' and tax_code = '{tax_code}' """.format(
+                parent=invoice.name, tax_code=w.tax_code), as_dict=0)
 
-        tax_type = frappe.db.sql(
-            """ select distinct tax_code, item_tax_template from `tabSales Invoice Item` where parent = '{parent}' """.format(
-                parent=invoice.name), as_dict=1)
+        new_tax = tax[0][0] * sum_tax[0][0] / 100
+        ss.append({
+            "taxType": w.tax_code,
+            "amount": round(new_tax, 5)
+        })
 
-        for w in tax_type:
-            tax = frappe.db.sql(
-                """ select tax_rate from `tabItem Tax Template Detail` where parent = '{parent}' """.format(
-                    parent=w.item_tax_template), as_dict=0)
-            sum_tax = frappe.db.sql(
-                """ select sum(amount) from `tabSales Invoice Item` where parent = '{parent}' and tax_code = '{tax_code}' """.format(
-                    parent=invoice.name, tax_code=w.tax_code), as_dict=0)
+    temp["taxTotals"] = ss
 
-            new_tax = -1 * tax[0][0] * sum_tax[0][0] / 100
-            ss.append({
-                "taxType": w.tax_code,
-                "amount": round(new_tax, 5)
-            })
+    temp["totalAmount"] = round(invoice.grand_total, 5)
 
-        temp["taxTotals"] = ss
+
+    temp["extraDiscountAmount"] = round(invoice.discount_amount, 5)
+    temp["totalItemsDiscountAmount"] = 0  # round(total_discount, 5)
 
 
 
-        total_discount = 0
-        net_amount = 0
-        for z in invoice.items:
-            total_discount += (z.discount_amount * z.qty * -1)
-            net_amount += round(z.amount * -1, 5)
 
-        temp["totalDiscountAmount"] = round(total_discount, 5)
-        new_total = 0
-        for v in invoice.items:
-            new_total += (v.qty * v.rate) + (v.qty * v.discount_amount)
-
-        temp["totalSalesAmount"] = round(new_total * -1, 5)
-        temp["netAmount"] = net_amount
-        temp["totalAmount"] = round(invoice.grand_total * -1, 5)
-        temp["extraDiscountAmount"] = round(invoice.discount_amount * -1, 5)
-        temp["totalItemsDiscountAmount"] = 0  # round(total_discount, 5)
 
     # Append temp dict into document list then assign document to data
     documents.append(temp)
