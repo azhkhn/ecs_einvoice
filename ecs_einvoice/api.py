@@ -71,12 +71,47 @@ def login():
                 frappe.db.sql(
                     """ update `tabEInvoice Settings` set generated_access_token = '{new_token}' where name = '{name}' 
                     """.format(name=x.name, new_token=json[key]))
+
     pass
 
 
 
 @frappe.whitelist(allow_guest=True)
-def signature_login(usr, pwd):
+def signature_login(Username, Password):
+    try:
+        login_manager = frappe.auth.LoginManager()
+        login_manager.authenticate(user=Username, pwd=Password)
+        login_manager.post_login()
+
+
+    except frappe.exceptions.AuthenticationError:
+        frappe.clear_messages()
+        frappe.local.response["message"] = {
+            "success_key": true,
+            "message": "اسم المستخدم او كلمة المرور غير صحيحة !"
+        }
+    api_generate = generate_keys(frappe.session.user)
+    user = frappe.get_doc('User', frappe.session.user)
+
+    frappe.response["message"] = {
+        "success": "200",
+        "message": "Authentication Success",
+        "data": [
+            {
+                "ID": frappe.session.sid,
+                "Username": Username,
+                "user_id": user.name,
+                "CompanyNumber": "1000"
+            }
+        ]
+    }
+    return
+
+
+
+
+@frappe.whitelist(allow_guest=True)
+def signature_login2(usr, pwd):
     try:
         login_manager = frappe.auth.LoginManager()
         login_manager.authenticate(user=usr, pwd=pwd)
