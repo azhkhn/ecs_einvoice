@@ -3,7 +3,7 @@ from re import A
 import frappe
 from frappe import auth
 import datetime
-import json, ast, requests
+import json, ast, requests, sys
 from frappe.utils import money_in_words
 import urllib.request
 from datetime import datetime, timedelta
@@ -51,6 +51,8 @@ def send_invoice(name):
         references = []
         temp = {}
 
+        if signature_type == "With Signature" and s_invoice.e_signed == 0:
+            frappe.throw(" Please Sign The Invoice Before Sending It")
         ## Enviroment
         if signature_type == "Without Signature":
             documentTypeVersion = "0.9"
@@ -101,14 +103,15 @@ def send_invoice(name):
         #    so_detail = frappe.get_doc("Sales Order", so[0][0])
         #    temp["salesOrderDescription"] = str(so_detail.transaction_date)
         temp["proformaInvoiceNumber"] = "Null"
-        """
-        temp["signatures"] = [
-            {
-                "signatureType": "I",
-                "value": "MIIGywYJKoZIhvcNAQcCoIIGvDCCBrgCAQMxDTALBglghkgBZQMEAgEwCwYJKoZIhvcNAQcFoIID/zCCA/swggLjoAMCAQICEEFkOqRVlVar0F0n3FZOLiIwDQYJKoZIhvcNAQELBQAwSTELMAkGA1UEBhMCRUcxFDASBgNVBAoTC0VneXB0IFRydXN0MSQwIgYDVQQDExtFZ3lwdCBUcnVzdCBDb3Jwb3JhdGUgQ0EgRzIwHhcNMjAwMzMxMDAwMDAwWhcNMjEwMzMwMjM1OTU5WjBgMRUwEwYDVQQKFAxFZ3lwdCBUcnVzdCAxGDAWBgNVBGEUD1ZBVEVHLTExMzMxNzcxMzELMAkGA1UEBhMCRUcxIDAeBgNVBAMMF1Rlc3QgU2VhbGluZyBEZW1vIHVzZXIyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApmVGVJtpImeq\u002BtIJiVWSkIEEOTIcnG1XNYQOYtf5\u002BDg9eF5H5x1wkgR2G7dvWVXrTsdNv2Q\u002Bgvml9SdfWxlYxaljg2AuBrsHFjYVEAQFI37EW2K7tbMT7bfxwT1M5tbjxnkTTK12cgwxPr2LBNhHpfXp8SNyWCxpk6eyJb87DveVwCLbAGGXO9mhDj62glVTrCFit7mHC6bZ6MOMAp013B8No9c8xnrKQiOb4Tm2GxBYHFwEcfYUGZNltGZNdVUtu6ty\u002BNTrSRRC/dILeGHgz6/2pgQPk5OFYRTRHRNVNo\u002BjG\u002BnurUYkSWxA4I9CmsVt2FdeBeuvRFs/U1I\u002BieKg1wIDAQABo4HHMIHEMAkGA1UdEwQCMAAwVAYDVR0fBE0wSzBJoEegRYZDaHR0cDovL21wa2ljcmwuZWd5cHR0cnVzdC5jb20vRWd5cHRUcnVzdENvcnBvcmF0ZUNBRzIvTGF0ZXN0Q1JMLmNybDAdBgNVHQ4EFgQUqzFDImtytsUbghbmtnl2/k4d5jEwEQYJYIZIAYb4QgEBBAQDAgeAMB8GA1UdIwQYMBaAFCInP8ziUIPmu86XJUWXspKN3LsFMA4GA1UdDwEB/wQEAwIGwDANBgkqhkiG9w0BAQsFAAOCAQEAxE3KpyYlPy/e3\u002B6jfz5RqlLhRLppWpRlKYUvH1uIhCNRuWaYYRchw1xe3jn7bLKbNrUmey\u002BMRwp1hZptkxFMYKTIEnNjOKCrLmVIuPFcfLXAQFq5vgLDSbnUhG/r5D\u002B50ndPucyUPhX3gw8gFlA1R\u002BtdNEoeKqYSo9v3p5qNANq12OuZbkhPg6sAD4dojWoNdlkc8J2ML0eq4a5AQvb4yZVb\u002BezqJyqKj83RekRZi0kMxoIm8l82CN8I/Bmp6VVNJRhQKhSeb7ShpdkZcMwcfKdDw6LW02/XcmzVl8NBBbLjKSJ/jxdL1RxPPza7RbGqSx9pfyav5\u002BAxO9sXnXXc5jGCApIwggKOAgEBMF0wSTELMAkGA1UEBhMCRUcxFDASBgNVBAoTC0VneXB0IFRydXN0MSQwIgYDVQQDExtFZ3lwdCBUcnVzdCBDb3Jwb3JhdGUgQ0EgRzICEEFkOqRVlVar0F0n3FZOLiIwCwYJYIZIAWUDBAIBoIIBCjAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcFMBwGCSqGSIb3DQEJBTEPFw0yMTAyMDEyMzUwMjFaMC8GCSqGSIb3DQEJBDEiBCD5bGXJu9uJZIPMGXK98UrHzJM/V2U/WAO6BErxpX5wdTCBngYLKoZIhvcNAQkQAi8xgY4wgYswgYgwgYUEIAJA8uO/ek3l9i3ZOgRtPhGWwwFYljbeJ7yAgEnyYNCWMGEwTaBLMEkxCzAJBgNVBAYTAkVHMRQwEgYDVQQKEwtFZ3lwdCBUcnVzdDEkMCIGA1UEAxMbRWd5cHQgVHJ1c3QgQ29ycG9yYXRlIENBIEcyAhBBZDqkVZVWq9BdJ9xWTi4iMAsGCSqGSIb3DQEBAQSCAQB13E1WX\u002BzbWppfJi3DBK9MMSB1TXuxcNkGXQ19OcRUUAaAe2K\u002BisobYrUCZbi3ygc2AWOMyafboxjjomzrnvXKrFgspT4wAFPYaAGFzKWq\u002BW/nqMhIqJVIpS/NM7Al4HvuBA5iGuZEQFusElB0yIxOIiYDI4v8Ilkff4/duj/V2CNaN5cqXLOpL5RP6Y5i\u002BVsPGb89t/L0dSIldGN0JqaqarqYo5/RwsUFJJq01DFpPGNbOIX3gSCDmycfhJPS9csnne9Zt\u002BabNpja5ZR6KA8JMe4DHes7FDZqHBNHdC\u002BRDXT4crqmnyiJjizULu6MqDc0Fv3vrMMWDLRlwDecgq7i"
-            }
-        ]
-        """
+
+        if signature_type == "With Signature":
+            temp["signatures"] = [
+                {
+                    "signatureType": "I",
+                    "value": doc.signature
+                }
+            ]
+
         temp["issuer"] = {
             "address": {
                 "branchID": branch_id,
@@ -447,15 +450,12 @@ def cancel_invoice(name):
         else:
             frappe.msgprint(" Cancellation Request Has Been Sent Successfully To ETA ")
 
-
-
 @frappe.whitelist(allow_guest=True)
 def update_uuid_status():
     invoices = frappe.db.sql(""" select name as name from `tabSales Invoice` where docstatus = 1 and uuid is not null and eta_status != "Valid" """,as_dict=1)
     for x in invoices:
         name = x.name
         get_invoice(name)
-
 
 @frappe.whitelist(allow_guest=True)
 def pdf(name):
@@ -491,38 +491,14 @@ def pdf(name):
         }, headers=headers2)
     frappe.msgprint(response2.content)
 
-
 @frappe.whitelist()
 def list_invoices_for_signature_old_service():
-    invoices = frappe.db.sql(
-        """ select name, customer_name, posting_date, grand_total, discount_amount
-         from `tabSales Invoice`
-         where docstatus = 1 
-         and e_signed = 0 
-         and e_invoice = 1 
-         """, as_dict=1)
+    headers = {'content-type': 'application/json; charset=utf-8', 'Accept': 'application/json',
+               'Authorization': 'token 7f25c381787bb27:c8a9b69c5c5d295'}
 
-    result = []
-    for x in invoices:
-        total_items_discount = 0
-        item_discounts = frappe.db.sql(""" select discount_amount, qty
-                                           from `tabSales Invoice Item` where parent = '{name}'
-                                       """.format(name=x.name), as_dict=1)
-        for z in item_discounts:
-            total_items_discount += z.discount_amount * z.qty
-            data = {
-                'document_no': x.name,
-                'document_date': x.posting_date,
-                'customer': x.customer_name,
-                'total_before_discount': x.grand_total + x.discount_amount + total_items_discount,
-                'total_after_discount': x.grand_total,
-            }
-            result.append(data)
-    if result:
-        return result
-    else:
-        return("No Invoices Found")
-
+    response = requests.get(url="https://einvoices.erpcloud.systems/api/method/ecs_einvoice.ecs_einvoice.sales_invoice.sales_invoice.list_invoices_for_signature", headers=headers)
+    returned_data = response.json()
+    return returned_data['message']
 
 @frappe.whitelist()
 def list_invoices_for_signature():
@@ -547,7 +523,7 @@ def list_invoices_for_signature():
         invoice_data = {
             "ID": x.name,
             "DocumentNumber": x.name,
-            "DocumentDate": x.posting_date,
+            "DocumentDate": str(x.posting_date),
         }
         for z in item_discounts:
             total_items_discount += z.discount_amount * z.qty
@@ -560,8 +536,10 @@ def list_invoices_for_signature():
 
         invoice.append(invoice_data)
         results["data"] = invoice
+
     if results:
         return results
+
     else:
         return "No Invoices Found"
 
@@ -588,7 +566,6 @@ def receive_signature(name, signature):
             ]
         }
         return response
-
 
 @frappe.whitelist(allow_guest=True)
 def multi_get_invoice_to_sign(data):
