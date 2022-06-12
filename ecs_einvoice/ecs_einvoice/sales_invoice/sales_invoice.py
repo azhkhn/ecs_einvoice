@@ -961,7 +961,7 @@ def get_invoice_details(**kwargs):
             "country": c_address.county,
             "governate": c_address.state,
             "regionCity": c_address.city,
-            "street": c_address.address_line1,
+            "street": str(c_address.address_line1),
             "buildingNumber": c_address.building_number,
             "postalCode": c_address.pincode,
             "floor": c_address.floor,
