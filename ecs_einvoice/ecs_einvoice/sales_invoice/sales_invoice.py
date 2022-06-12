@@ -108,7 +108,7 @@ def send_invoice(name):
             temp["signatures"] = [
                 {
                     "signatureType": "I",
-                    "value": doc.signature
+                    "value": invoice.signature
                 }
             ]
 
