@@ -815,3 +815,94 @@ def blank_on_update(doc, method=None):
     pass
 
 
+################ Item
+
+@frappe.whitelist()
+def item_onload(doc, method=None):
+    pass
+
+
+@frappe.whitelist()
+def item_before_insert(doc, method=None):
+    doc.eta_item = ""
+    doc.eta_item_code = ""
+    doc.eta_item_type = ""
+
+@frappe.whitelist()
+def item_after_insert(doc, method=None):
+    pass
+
+@frappe.whitelist()
+def item_before_validate(doc, method=None):
+    pass
+
+@frappe.whitelist()
+def item_validate(doc, method=None):
+    pass
+
+@frappe.whitelist()
+def item_before_save(doc, method=None):
+    pass
+
+@frappe.whitelist()
+def item_on_update(doc, method=None):
+    generated_access_token = frappe.db.get_value('EInvoice Settings', {'company': doc.company},
+                                                 'generated_access_token')
+    tax_id = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'tax_id')
+    category_code = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'category_code')
+
+    if not tax_id:
+        frappe.throw(" Please Add The Tax ID In The E-Invoice Settings For Company " + str(doc.company))
+
+    if not category_code:
+        frappe.throw(" Please Add The Category Code In The E-Invoice Settings For Company " + str(doc.company))
+
+    if doc.eta_item and not doc.eta_item_type:
+        frappe.throw(" Please Select ETA Item Type For Item " + str(doc.name))
+
+    if doc.eta_item and not doc.eta_item_code:
+        data = {}
+        items = [
+            {
+                "codeType": doc.eta_item_type,
+                "parentCode": category_code,
+                "itemCode": "EG-" + str(tax_id) + "-" + str(doc.item_code.replace('-', '')),
+                "codeName": doc.item_name,
+                "codeNameAr": doc.item_name,
+                "activeFrom": "2022-01-01T00:00:00.000",
+                "description": doc.description,
+                "descriptionAr": doc.description,
+                "requestReason": "Request reason text"
+            }
+        ]
+        data["items"] = items
+        headers = {'content-type': 'application/json;charset=utf-8',
+                   "Authorization": "Bearer " + generated_access_token,
+                   "Content-Length": "376"
+                   }
+        response = requests.post(url="https://api.preprod.invoicing.eta.gov.eg/api/v1.0/codetypes/requests/codes",
+                                 data=json.dumps(data), headers=headers)
+        frappe.msgprint(json.dumps(data))
+        frappe.msgprint(response.content)
+        returned_data = response.json()
+        doc.eta_item_code = returned_data['passedItems'][0]['itemCode']
+        doc.save()
+        doc.reload()
+
+
+@frappe.whitelist()
+def get_item_status(name):
+    item = frappe.get_doc("Item", name)
+
+    generated_access_token = frappe.db.get_value('EInvoice Settings', {'company': item.company}, 'generated_access_token')
+
+    headers = {'content-type': 'application/json;charset=utf-8',
+               "Authorization": "Bearer " + generated_access_token,
+               "Content-Length": "376"
+               }
+
+    url = "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/codetypes/requests/my?ItemCode=" + str(item.eta_item_code)
+
+    response = requests.get(url=url, headers=headers)
+    frappe.msgprint(response.content)
+

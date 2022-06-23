@@ -12,6 +12,7 @@ app_license = "MIT"
 
 doctype_js = {
 	"Sales Invoice": "ecs_einvoice/sales_invoice/sales_invoice.js",
+	"Item": "ecs_einvoice/item/item.js",
 	"Item Tax Template": "ecs_einvoice/item_tax_template/item_tax_template.js"
 }
 
@@ -73,6 +74,15 @@ doc_events = {
 		"before_save": "ecs_einvoice.event_triggers.mr_before_save",
 		"before_cancel": "ecs_einvoice.event_triggers.mr_before_cancel",
 		"on_update": "ecs_einvoice.event_triggers.mr_on_update",
+},
+	"Item": {
+		"onload": "ecs_einvoice.event_triggers.item_onload",
+		"before_insert": "ecs_einvoice.event_triggers.item_before_insert",
+		"after_insert": "ecs_einvoice.event_triggers.item_after_insert",
+		"before_validate": "ecs_einvoice.event_triggers.item_before_validate",
+		"validate": "ecs_einvoice.event_triggers.item_validate",
+		"before_save": "ecs_einvoice.event_triggers.item_before_save",
+		"on_update": "ecs_einvoice.event_triggers.item_on_update",
 },
 	"Stock Entry": {
 		"onload": "ecs_einvoice.event_triggers.ste_onload",

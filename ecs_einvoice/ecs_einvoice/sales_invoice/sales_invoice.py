@@ -93,7 +93,8 @@ def send_invoice(name):
         #if datetime.strptime(issued_time1, '%H:%M:%S.%f') < datetime.strptime(compared_time, '%H:%M:%S.%f'):
         #    temp["dateTimeIssued"] = str(add_to_date(invoice.posting_date, days=0)) + "T0" + datetime.strptime(issued_time, '%H:%M:%S')+ "Z"
         #else:
-        temp["dateTimeIssued"] = str(add_to_date(invoice.posting_date, days=0)) + "T" +  datetime.now().strftime("%H:%M:%S") + "Z"
+        #temp["dateTimeIssued"] = str(add_to_date(invoice.posting_date, days=0)) + "T" +  datetime.now().strftime("%H:%M:%S") + "Z"
+        temp["dateTimeIssued"] = str(add_to_date(invoice.posting_date, days=0)) + "T00:00:01Z"
 
         temp["purchaseOrderReference"] = invoice.po_no
         temp["purchaseOrderDescription"] = str(invoice.po_date)
@@ -334,7 +335,7 @@ def send_invoice(name):
 
         data['documents'] = documents
 
-        # frappe.msgprint(json.dumps(data))
+        #frappe.msgprint(json.dumps(data))
 
         headers = {'content-type': 'application/json;charset=utf-8',
                    "Authorization": "Bearer " + generated_access_token,
@@ -997,8 +998,7 @@ def get_invoice_details(**kwargs):
     temp["documentTypeVersion"] = documentTypeVersion
 
     invoice = frappe.get_doc("Sales Invoice", kwargs['name'])
-    temp["dateTimeIssued"] = str(add_to_date(invoice.posting_date, days=0)) + "T" + datetime.now().strftime(
-        "%H:%M:%S") + "Z"
+    temp["dateTimeIssued"] = str(add_to_date(invoice.posting_date, days=0)) + "T00:00:01Z"
     ## activity Code
     temp["taxpayerActivityCode"] = activity_code
 

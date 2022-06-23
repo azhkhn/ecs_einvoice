@@ -21,6 +21,7 @@
   "internal_user_key",
   "internal_user_secret",
   "internal_url",
+  "category_code",
   "enable",
   "section_break_16",
   "generated_access_token",
@@ -230,11 +231,16 @@
    "fieldname": "company_name",
    "fieldtype": "Data",
    "label": "Company Name"
+  },
+  {
+   "fieldname": "category_code",
+   "fieldtype": "Data",
+   "label": "Category Code"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-06-11 18:14:08.091015",
+ "modified": "2022-06-23 10:05:47.919167",
  "modified_by": "Administrator",
  "module": "Ecs Einvoice",
  "name": "EInvoice Settings",
