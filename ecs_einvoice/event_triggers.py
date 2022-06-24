@@ -189,16 +189,15 @@ def dn_on_update(doc, method=None):
 def siv_onload(doc, method=None):
     pass
 
+
 @frappe.whitelist()
 def siv_before_insert(doc, method=None):
     enable = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'enable')
-    signature_type = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'signature_type')
+    document_version = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'document_version')
     doc.e_invoice = enable
-    doc.signature_type = signature_type
+    doc.document_version = document_version
     doc.against_uuid = ""
-    doc.sign = 0
     doc.e_signed = 0
-    doc.signature = ""
     doc.uuid = ""
     doc.eta_status = ""
     doc.submission_uuid = ""
@@ -206,21 +205,27 @@ def siv_before_insert(doc, method=None):
     doc.eta_link = ""
     doc.eta_invoice_link = ""
 
+
 @frappe.whitelist()
 def siv_after_insert(doc, method=None):
     pass
+
+
 @frappe.whitelist()
 def siv_before_validate(doc, method=None):
     pass
+
+
 @frappe.whitelist()
 def siv_validate(doc, method=None):
     for x in doc.items:
         x.tax_code = frappe.db.get_value("Item Tax Template", x.item_tax_template, "tax_code")
         x.tax_subtype_code = frappe.db.get_value("Item Tax Template", x.item_tax_template, "tax_subtype_code")
     enable = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'enable')
-    signature_type = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'signature_type')
+    document_version = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'document_version')
     doc.e_invoice = enable
-    doc.signature_type = signature_type
+    doc.document_version = document_version
+
 
 @frappe.whitelist()
 def siv_on_submit(doc, method=None):
@@ -231,55 +236,13 @@ def siv_on_submit(doc, method=None):
         if posting_date < add_to_date(utils.today(), days=-(allowed_days), as_string=True):
             frappe.throw(
                 "You are allowed only to submit past dated invoices for {0} days before today".format(allowed_days))
-    '''
-    linking_with_eta = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'linking_with_eta')
-    enable = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'enable')
-    if linking_with_eta == "Automatically" and enable == 1:
-        name = doc.name
-        send_invoice(name)
-        sleep(1)
-        get_invoice(name)
-        doc.reload()
-    
-
-    user = frappe.session.user
-    lang = frappe.db.get_value("User", {'name': user}, "language")
-    if doc.eta_status != "Invalid":
-        if lang == "ar":
-            frappe.msgprint(" تم ترحيل الفاتورة إلى نظام مصلحة الضرائب بنجاح ")
-        else:
-            frappe.msgprint(" Invoice Has Been Submitted Successfully To ETA ")
-
-    if doc.eta_status == "Invalid":
-        if lang == "ar":
-            frappe.msgprint(" حدث خطأ في ترحيل الفاتورة إلى نظام مصلحة الضرائب ")
-        else:
-            frappe.msgprint(" There Is A Problem In Submitting The Invoice To ETA ")
-    '''
 
 @frappe.whitelist()
 def siv_on_cancel(doc, method=None):
     pass
-    '''
-    linking_with_eta = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'linking_with_eta')
-    enable = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'enable')
-    if linking_with_eta == "Automatically" and enable == 1:
-        name = doc.name
-        cancel_invoice(name)
-    '''
-
 
 @frappe.whitelist()
 def siv_on_update_after_submit(doc, method=None):
-    '''
-    linking_with_eta = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'linking_with_eta')
-    if linking_with_eta == "Manually" and doc.send_to_eta_1 == 1:
-        name = doc.name
-        send_invoice(name)
-        sleep(1)
-        get_invoice(name)
-        doc.reload()
-    '''
     pass
 
 
@@ -827,22 +790,28 @@ def item_before_insert(doc, method=None):
     doc.eta_item = ""
     doc.eta_item_code = ""
     doc.eta_item_type = ""
+    doc.eta_code_status = ""
+
 
 @frappe.whitelist()
 def item_after_insert(doc, method=None):
     pass
 
+
 @frappe.whitelist()
 def item_before_validate(doc, method=None):
     pass
+
 
 @frappe.whitelist()
 def item_validate(doc, method=None):
     pass
 
+
 @frappe.whitelist()
 def item_before_save(doc, method=None):
     pass
+
 
 @frappe.whitelist()
 def item_on_update(doc, method=None):
@@ -850,6 +819,11 @@ def item_on_update(doc, method=None):
                                                  'generated_access_token')
     tax_id = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'tax_id')
     category_code = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'category_code')
+    environment = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'environment')
+    if environment == "Pre-Production":
+        url = "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/codetypes/requests/codes"
+    if environment == "Production":
+        url = "https://api.invoicing.eta.gov.eg/api/v1.0/codetypes/requests/codes"
 
     if not tax_id:
         frappe.throw(" Please Add The Tax ID In The E-Invoice Settings For Company " + str(doc.company))
@@ -880,8 +854,7 @@ def item_on_update(doc, method=None):
                    "Authorization": "Bearer " + generated_access_token,
                    "Content-Length": "376"
                    }
-        response = requests.post(url="https://api.preprod.invoicing.eta.gov.eg/api/v1.0/codetypes/requests/codes",
-                                 data=json.dumps(data), headers=headers)
+        response = requests.post(url=url, data=json.dumps(data), headers=headers)
         frappe.msgprint(json.dumps(data))
         frappe.msgprint(response.content)
         returned_data = response.json()
@@ -893,16 +866,15 @@ def item_on_update(doc, method=None):
 @frappe.whitelist()
 def get_item_status(name):
     item = frappe.get_doc("Item", name)
-
-    generated_access_token = frappe.db.get_value('EInvoice Settings', {'company': item.company}, 'generated_access_token')
-
-    headers = {'content-type': 'application/json;charset=utf-8',
-               "Authorization": "Bearer " + generated_access_token,
-               "Content-Length": "376"
-               }
-
-    url = "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/codetypes/requests/my?ItemCode=" + str(item.eta_item_code)
-
-    response = requests.get(url=url, headers=headers)
-    frappe.msgprint(response.content)
-
+    generated_access_token = frappe.db.get_value('EInvoice Settings', {'company': item.company},
+                                                 'generated_access_token')
+    environment = frappe.db.get_value('EInvoice Settings', {'company': item.company}, 'environment')
+    if environment == "Pre-Production":
+        url = "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/codetypes/requests/my"
+    if environment == "Production":
+        url = "https://api.invoicing.eta.gov.eg/api/v1.0/codetypes/requests/my"
+    headers = {"Authorization": "Bearer " + generated_access_token}
+    response = requests.get(url=url, params={"ItemCode": item.eta_item_code}, headers=headers)
+    returned_data = response.json()
+    item.eta_code_status = returned_data['result'][0]['status']
+    item.save()

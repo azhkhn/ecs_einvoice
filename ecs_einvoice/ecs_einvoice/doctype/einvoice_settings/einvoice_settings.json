@@ -7,21 +7,13 @@
  "engine": "InnoDB",
  "field_order": [
   "e_invoice_settings_section",
-  "linking_with_eta",
   "environment",
-  "signature_type",
+  "document_version",
   "allowed_days",
-  "api_base_url",
-  "api_cancellation_url",
-  "api_document_url",
+  "category_code",
   "column_break_6",
-  "id_server_base_url",
   "client_id",
   "client_secret",
-  "internal_user_key",
-  "internal_user_secret",
-  "internal_url",
-  "category_code",
   "enable",
   "section_break_16",
   "generated_access_token",
@@ -51,79 +43,33 @@
    "label": "E-Invoice Settings"
   },
   {
-   "default": "Manually",
-   "description": "Send / Cancel Invoices Automatically Or Manually",
-   "fieldname": "linking_with_eta",
-   "fieldtype": "Select",
-   "label": "Linking With ETA",
-   "options": "Automatically\nManually",
-   "read_only": 1
-  },
-  {
    "fieldname": "environment",
    "fieldtype": "Select",
    "label": "Environment",
-   "options": "Pre-Production\nProduction"
-  },
-  {
-   "fieldname": "signature_type",
-   "fieldtype": "Select",
-   "label": "Signature Type",
-   "options": "With Signature\nWithout Signature"
+   "options": "Pre-Production\nProduction",
+   "reqd": 1
   },
   {
    "fieldname": "allowed_days",
    "fieldtype": "Int",
-   "label": "Allowed Days"
-  },
-  {
-   "fieldname": "api_base_url",
-   "fieldtype": "Data",
-   "label": "API Base URL"
-  },
-  {
-   "fieldname": "api_cancellation_url",
-   "fieldtype": "Data",
-   "label": "API Cancellation URL"
-  },
-  {
-   "fieldname": "api_document_url",
-   "fieldtype": "Data",
-   "label": "API Document URL"
+   "label": "Allowed Days",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_6",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "id_server_base_url",
-   "fieldtype": "Data",
-   "label": "ID Server Base URL"
-  },
-  {
    "fieldname": "client_id",
    "fieldtype": "Data",
-   "label": "Client ID"
+   "label": "Client ID",
+   "reqd": 1
   },
   {
    "fieldname": "client_secret",
    "fieldtype": "Data",
-   "label": "Client Secret"
-  },
-  {
-   "fieldname": "internal_user_key",
-   "fieldtype": "Data",
-   "label": "Internal User Key"
-  },
-  {
-   "fieldname": "internal_user_secret",
-   "fieldtype": "Data",
-   "label": "Internal User Secret"
-  },
-  {
-   "fieldname": "internal_url",
-   "fieldtype": "Data",
-   "label": "Internal URL"
+   "label": "Client Secret",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -235,12 +181,21 @@
   {
    "fieldname": "category_code",
    "fieldtype": "Data",
-   "label": "Category Code"
+   "label": "Category Code",
+   "reqd": 1
+  },
+  {
+   "fieldname": "document_version",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Document Version",
+   "options": "v0.9\nv1.0",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-06-23 10:05:47.919167",
+ "modified": "2022-06-25 01:42:07.830394",
  "modified_by": "Administrator",
  "module": "Ecs Einvoice",
  "name": "EInvoice Settings",
