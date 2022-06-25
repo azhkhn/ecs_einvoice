@@ -67,9 +67,3 @@ frappe.ui.form.on("Sales Invoice", "send_to_eta", function(frm) {
   }
   */
   });
-
-frappe.ui.form.on("Sales Invoice", "clear_signature", function(frm){
-    frappe.db.set_value("Sales Invoice", cur_frm.doc.name, "e_signed", 0);
-    frappe.db.set_value("Sales Invoice", cur_frm.doc.name, "signature", "");
-    cur_frm.save('Update');
-});
