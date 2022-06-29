@@ -12,6 +12,7 @@ def login():
     companies = frappe.db.sql(""" Select name, company, environment, client_id, client_secret, generated_access_token
                                   From `tabEInvoice Settings` """, as_dict=1)
 
+    id_server_base_url = ""
     for x in companies:
         if x.environment == "Pre-Production":
             id_server_base_url = "https://id.preprod.eta.gov.eg/connect/token"
