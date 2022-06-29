@@ -23,6 +23,7 @@ def send_invoice(name):
     client_id = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'client_id')
     client_secret = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'client_secret')
     environment = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'environment')
+    api_base_url = ""
     if environment == "Pre-Production":
         api_base_url = "https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions"
     if environment == "Production":
@@ -127,7 +128,7 @@ def send_invoice(name):
             item_tax_rate = frappe.db.sql(
                 """ select tax_rate from `tabItem Tax Template Detail` where parent = '{parent}' """.format(
                     parent=x.item_tax_template), as_dict=0)
-            salesTotal = x.rate + x.discount_amount
+            salesTotal = x.rate #+ x.discount_amount
             invoiceLines.append({
                 "description": x.item_name,
                 "itemType": x.eta_item_type,
@@ -147,8 +148,8 @@ def send_invoice(name):
                     "amountEGP": round(salesTotal, 5)
                 },
                 "discount": {
-                    "rate": round(x.discount_percentage, 5),
-                    "amount": round((x.discount_amount * x.qty), 5)
+                    "rate": 0,#round(x.discount_percentage, 5),
+                    "amount": 0#round((x.discount_amount * x.qty), 5)
                 },
                 "taxableItems": [
                     {
@@ -196,16 +197,16 @@ def send_invoice(name):
             total_discount += (z.discount_amount * z.qty)
             net_amount += round(z.amount, 5)
 
-        temp["netAmount"] = net_amount
+        temp["netAmount"] = round(net_amount, 5)
         temp["totalAmount"] = round(invoice.grand_total, 5)
-        temp["totalDiscountAmount"] = round(total_discount, 5)
+        temp["totalDiscountAmount"] = 0#round(total_discount, 5)
 
         temp["extraDiscountAmount"] = round(invoice.discount_amount, 5)
         temp["totalItemsDiscountAmount"] = 0#round(total_discount, 5)
 
         new_total = 0
         for v in invoice.items:
-            new_total += (v.qty * v.rate) + (v.qty * v.discount_amount)
+            new_total += (v.qty * v.rate) #+ (v.qty * v.discount_amount)
 
         temp["totalSalesAmount"] = round(new_total, 5)
 
@@ -215,7 +216,7 @@ def send_invoice(name):
                 item_tax_rate = frappe.db.sql(
                     """ select tax_rate from `tabItem Tax Template Detail` where parent = '{parent}' """.format(
                         parent=x.item_tax_template), as_dict=0)
-                salesTotal = x.rate + x.discount_amount
+                salesTotal = x.rate #+ x.discount_amount
                 invoiceLines.append({
                     "description": x.item_name,
                     "itemType": x.eta_item_type,
@@ -235,8 +236,8 @@ def send_invoice(name):
                         "amountEGP": round(salesTotal, 5)
                     },
                     "discount": {
-                        "rate": round(x.discount_percentage, 5),
-                        "amount": round((x.discount_amount * x.qty * -1), 5)
+                        "rate": 0, #round(x.discount_percentage, 5),
+                        "amount": 0 #round((x.discount_amount * x.qty * -1), 5)
                     },
                     "taxableItems": [
                         {
@@ -284,16 +285,16 @@ def send_invoice(name):
                 total_discount += (z.discount_amount * z.qty * -1)
                 net_amount += round(z.amount * -1, 5)
 
-            temp["netAmount"] = net_amount
+            temp["netAmount"] = round(net_amount, 5)
             temp["totalAmount"] = round(invoice.grand_total * -1, 5)
-            temp["totalDiscountAmount"] = round(total_discount, 5)
+            temp["totalDiscountAmount"] = 0 #round(total_discount, 5)
 
             temp["extraDiscountAmount"] = round(invoice.discount_amount * -1, 5)
             temp["totalItemsDiscountAmount"] = 0#round(total_discount, 5)
 
             new_total = 0
             for v in invoice.items:
-                new_total += (v.qty * v.rate) + (v.qty * v.discount_amount)
+                new_total += (v.qty * v.rate) #+ (v.qty * v.discount_amount)
 
             temp["totalSalesAmount"] = round(new_total * -1, 5)
 
@@ -432,24 +433,15 @@ def list_invoices_for_signature():
     results["message"] = ""
 
     for x in invoices:
-        total_items_discount = 0
-        item_discounts = frappe.db.sql(""" select discount_amount, qty
-                                           from `tabSales Invoice Item` where parent = '{name}'
-                                       """.format(name=x.name), as_dict=1)
         invoice_data = {
             "ID": x.name,
             "DocumentNumber": x.name,
             "DocumentDate": str(x.posting_date),
+            "InvoiceTotal": x.grand_total + x.discount_amount,
+            "TotalAfterDiscount": x.grand_total,
+            "LastUpdateBy": x.owner,
+            "CustomerID_Text": x.customer_name,
         }
-        for z in item_discounts:
-            total_items_discount += z.discount_amount * z.qty
-            total = x.grand_total + x.discount_amount + total_items_discount
-        invoice_data.update({"InvoiceTotal": total,
-                             "TotalAfterDiscount": x.grand_total,
-                             "LastUpdateBy": x.owner,
-                             "CustomerID_Text": x.customer_name
-         })
-
         invoice.append(invoice_data)
         results["data"] = invoice
 
@@ -582,7 +574,7 @@ def get_invoice_details(**kwargs):
         item_tax_rate = frappe.db.sql(
             """ select tax_rate from `tabItem Tax Template Detail` where parent = '{parent}' """.format(
                 parent=x.item_tax_template), as_dict=0)
-        salesTotal = x.rate + x.discount_amount
+        salesTotal = x.rate #+ x.discount_amount
         invoiceLines.append({
             "description": x.item_name,
             "itemType": x.eta_item_type,
@@ -604,8 +596,8 @@ def get_invoice_details(**kwargs):
                 #"currencyExchangeRate": 1
             },
             "discount": {
-                "rate": round(x.discount_percentage, 5),
-                "amount": round((x.discount_amount * x.qty), 5)
+                "rate": 0, #round(x.discount_percentage, 5),
+                "amount": 0, #round((x.discount_amount * x.qty), 5)
             },
             "taxableItems": [
                 {
@@ -625,14 +617,14 @@ def get_invoice_details(**kwargs):
         total_discount += (z.discount_amount * z.qty)
         net_amount += round(z.amount, 5)
 
-    temp["totalDiscountAmount"] = round(total_discount, 5)
+    temp["totalDiscountAmount"] = 0 #round(total_discount, 5)
     new_total = 0
     for v in invoice.items:
-        new_total += (v.qty * v.rate) + (v.qty * v.discount_amount)
+        new_total += (v.qty * v.rate) #+ (v.qty * v.discount_amount)
 
     temp["totalSalesAmount"] = round(new_total, 5)
 
-    temp["netAmount"] = net_amount
+    temp["netAmount"] = round(net_amount, 5)
 
     total_taxes = 0
     for y in invoice.items:
