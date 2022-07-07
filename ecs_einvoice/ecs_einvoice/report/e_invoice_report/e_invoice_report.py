@@ -14,7 +14,7 @@ def execute(filters=None):
 
 def get_columns():
     return [
-		 {
+        {
             "label": _("الفاتورة"),
             "fieldname": "name",
             "fieldtype": "Link",
@@ -46,37 +46,42 @@ def get_columns():
             "fieldtype": "Data",
             "width": 120
         },
-		{
-			"label": _("المنطقة"),
-			"fieldname": "territory",
-			"fieldtype": "Data",
-			"width": 90
-		},
-		 {
+        {
+            "label": _("المنطقة"),
+            "fieldname": "territory",
+            "fieldtype": "Data",
+            "width": 90
+        },
+        {
             "label": _("الاجمالي"),
             "fieldname": "total",
             "fieldtype": "Currency",
             "width": 100
         },
-		{
+        {
             "label": _("اجمالي قيمة الضريبة"),
             "fieldname": "total_taxes_and_charges",
             "fieldtype": "Currency",
             "width": 150
         },
-		{
+        {
             "label": _("قيمة الخصم"),
             "fieldname": "discount_amount",
             "fieldtype": "Currency",
             "width": 100
         },
-		{
+        {
             "label": _("اجمالي المبلغ"),
             "fieldname": "grand_total",
             "fieldtype": "Currency",
             "width": 100
         },
-
+        {
+            "label": _("Version"),
+            "fieldname": "document_version",
+            "fieldtype": "Data",
+            "width": 90
+        },
         {
             "label": _("UUID"),
             "fieldname": "uuid",
@@ -90,6 +95,7 @@ def get_columns():
             "width": 130
         },
     ]
+
 
 def get_data(filters, columns):
     item_price_qty_data = []
@@ -126,14 +132,15 @@ def get_item_price_qty_data(filters):
 					`tabSales Invoice`.total_taxes_and_charges as total_taxes_and_charges,
 					`tabSales Invoice`.discount_amount as discount_amount,
 					`tabSales Invoice`.grand_total as grand_total,
+					`tabSales Invoice`.document_version as document_version,
 					`tabSales Invoice`.uuid as uuid,
 					`tabSales Invoice`.eta_status as eta_status
-				
+
 
 				FROM
 					`tabSales Invoice`
 				WHERE
-					`tabSales Invoice`.uuid is not null
+					`tabSales Invoice`.uuid != ""
 					and `tabSales Invoice`.e_invoice = 1
 					{conditions}
 
@@ -141,11 +148,18 @@ def get_item_price_qty_data(filters):
 				 """.format(conditions=conditions), filters, as_dict=1)
 
     if item_results:
+        docstatus = ""
         for item_dict in item_results:
+            if item_dict.docstatus == 0:
+                docstatus = "Draft"
+            if item_dict.docstatus == 1:
+                docstatus = "Submitted"
+            if item_dict.docstatus == 2:
+                docstatus = "Cancelled"
             data = {
                 'name': item_dict.name,
                 'posting_date': item_dict.posting_date,
-                'docstatus': item_dict.docstatus,
+                'docstatus': docstatus,
                 'customer': item_dict.customer,
                 'customer_group': item_dict.customer_group,
                 'territory': item_dict.territory,
@@ -153,6 +167,7 @@ def get_item_price_qty_data(filters):
                 'total': item_dict.total,
                 'total_taxes_and_charges': item_dict.total_taxes_and_charges,
                 'discount_amount': item_dict.discount_amount,
+                'document_version': item_dict.document_version,
                 'eta_status': item_dict.eta_status,
                 'uuid': item_dict.uuid,
             }
