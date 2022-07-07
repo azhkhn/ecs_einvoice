@@ -28,6 +28,12 @@ def get_columns():
             "width": 100
         },
         {
+            "label": _("الحالة"),
+            "fieldname": "docstatus",
+            "fieldtype": "Data",
+            "width": 100
+        },
+        {
             "label": _("اسم العميل"),
             "fieldname": "customer",
             "fieldtype": "Link",
@@ -110,7 +116,7 @@ def get_item_price_qty_data(filters):
     item_results = frappe.db.sql("""
 				SELECT 
 					`tabSales Invoice`.name as name,
-					`tabSales Invoice`.e_invoice as e_invoice,
+					`tabSales Invoice`.docstatus as docstatus,
 					`tabSales Invoice`.posting_date as posting_date,
 					`tabSales Invoice`.customer as customer,
 					`tabSales Invoice`.customer_group as customer_group,
@@ -127,7 +133,7 @@ def get_item_price_qty_data(filters):
 				FROM
 					`tabSales Invoice`
 				WHERE
-					`tabSales Invoice`.docstatus = 1
+					`tabSales Invoice`.uuid is not null
 					and `tabSales Invoice`.e_invoice = 1
 					{conditions}
 
@@ -139,6 +145,7 @@ def get_item_price_qty_data(filters):
             data = {
                 'name': item_dict.name,
                 'posting_date': item_dict.posting_date,
+                'docstatus': item_dict.docstatus,
                 'customer': item_dict.customer,
                 'customer_group': item_dict.customer_group,
                 'territory': item_dict.territory,
