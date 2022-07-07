@@ -14,6 +14,7 @@ from time import sleep
 import pickle
 
 
+
 @frappe.whitelist()
 def send_invoice(name):
     invoice = frappe.get_doc("Sales Invoice", name)
@@ -98,30 +99,47 @@ def send_invoice(name):
             "id": tax_id,
             "name": company
         }
-        c_address = frappe.get_doc("Address", invoice.customer_address)
+
         customer = frappe.get_doc("Customer", invoice.customer)
         if customer.customer_type == "Company":
+            c_address = frappe.get_doc("Address", invoice.customer_address)
             customer_type = "B"
+            temp["receiver"] = {
+                "address": {
+                    "country": c_address.county,
+                    "governate": c_address.state,
+                    "regionCity": c_address.city,
+                    "street": c_address.address_line1,
+                    "buildingNumber": c_address.building_number,
+                    "postalCode": c_address.pincode,
+                    "floor": c_address.floor,
+                    "room": c_address.room,
+                    "landmark": c_address.landmark,
+                    "additionalInformation": c_address.additional_info
+                },
+                "type": customer_type,
+                "id": customer.tax_id,
+                "name": customer.customer_name
+            }
         else:
-            customer_type = "A"
-
-        temp["receiver"] = {
-            "address": {
-                "country": c_address.county,
-                "governate": c_address.state,
-                "regionCity": c_address.city,
-                "street": c_address.address_line1,
-                "buildingNumber": c_address.building_number,
-                "postalCode": c_address.pincode,
-                "floor": c_address.floor,
-                "room": c_address.room,
-                "landmark": c_address.landmark,
-                "additionalInformation": c_address.additional_info
-            },
-            "type": customer_type,
-            "id": customer.tax_id,
-            "name": customer.customer_name
-        }
+            customer_type = "P"
+            temp["receiver"] = {
+                "address": {
+                    "country": "",
+                    "governate": "",
+                    "regionCity": "",
+                    "street": "",
+                    "buildingNumber": "",
+                    "postalCode": "",
+                    "floor": "",
+                    "room": "",
+                    "landmark": "",
+                    "additionalInformation": ""
+                },
+                "type": customer_type,
+                "id": "",
+                "name": customer.customer_name
+            }
 
         invoiceLines = []
         for x in invoice.items:
@@ -493,29 +511,46 @@ def get_invoice_details(**kwargs):
         "id": tax_id,
         "name": company
     }
-    c_address = frappe.get_doc("Address", invoice.customer_address)
     customer = frappe.get_doc("Customer", invoice.customer)
     if customer.customer_type == "Company":
+        c_address = frappe.get_doc("Address", invoice.customer_address)
         customer_type = "B"
+        temp["receiver"] = {
+            "address": {
+                "country": c_address.county,
+                "governate": c_address.state,
+                "regionCity": c_address.city,
+                "street": str(c_address.address_line1),
+                "buildingNumber": c_address.building_number,
+                "postalCode": c_address.pincode,
+                "floor": c_address.floor,
+                "room": c_address.room,
+                "landmark": c_address.landmark,
+                "additionalInformation": c_address.additional_info
+            },
+            "type": customer_type,
+            "id": customer.tax_id,
+            "name": customer.customer_name
+        }
     else:
-        customer_type = "A"
-    temp["receiver"] = {
-        "address": {
-            "country": c_address.county,
-            "governate": c_address.state,
-            "regionCity": c_address.city,
-            "street": str(c_address.address_line1),
-            "buildingNumber": c_address.building_number,
-            "postalCode": c_address.pincode,
-            "floor": c_address.floor,
-            "room": c_address.room,
-            "landmark": c_address.landmark,
-            "additionalInformation": c_address.additional_info
-        },
-        "type": customer_type,
-        "id": customer.tax_id,
-        "name": customer.customer_name
-    }
+        customer_type = "P"
+        temp["receiver"] = {
+            "address": {
+                "country": "",
+                "governate": "",
+                "regionCity": "",
+                "street": "",
+                "buildingNumber": "",
+                "postalCode": "",
+                "floor": "",
+                "room": "",
+                "landmark": "",
+                "additionalInformation": ""
+            },
+            "type": customer_type,
+            "id": "",
+            "name": customer.customer_name
+        }
 
     ## Document Type Invoice, Credit Note, Debit Note
 

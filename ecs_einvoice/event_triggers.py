@@ -237,7 +237,7 @@ def siv_on_submit(doc, method=None):
         if str(posting_date) < add_to_date(utils.today(), days=-(allowed_days), as_string=True):
             frappe.throw( "You are allowed only to submit past dated invoices for {0} days before today".format(allowed_days))
 
-        if not customer.tax_id:
+        if not customer.tax_id and customer.customer_type == "Company":
             frappe.throw("Please Add Tax ID For Customer {0}".format(doc.customer))
 
         for x in doc.items:
