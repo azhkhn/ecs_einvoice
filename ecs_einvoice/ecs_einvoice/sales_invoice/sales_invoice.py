@@ -14,6 +14,7 @@ from time import sleep
 import pickle
 
 
+
 @frappe.whitelist()
 def send_invoice(name):
     invoice = frappe.get_doc("Sales Invoice", name)
@@ -23,6 +24,7 @@ def send_invoice(name):
     client_id = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'client_id')
     client_secret = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'client_secret')
     environment = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'environment')
+    api_base_url = ""
     if environment == "Pre-Production":
         api_base_url = "https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions"
     if environment == "Production":
@@ -97,37 +99,54 @@ def send_invoice(name):
             "id": tax_id,
             "name": company
         }
-        c_address = frappe.get_doc("Address", invoice.customer_address)
+
         customer = frappe.get_doc("Customer", invoice.customer)
         if customer.customer_type == "Company":
+            c_address = frappe.get_doc("Address", invoice.customer_address)
             customer_type = "B"
+            temp["receiver"] = {
+                "address": {
+                    "country": c_address.county,
+                    "governate": c_address.state,
+                    "regionCity": c_address.city,
+                    "street": c_address.address_line1,
+                    "buildingNumber": c_address.building_number,
+                    "postalCode": c_address.pincode,
+                    "floor": c_address.floor,
+                    "room": c_address.room,
+                    "landmark": c_address.landmark,
+                    "additionalInformation": c_address.additional_info
+                },
+                "type": customer_type,
+                "id": customer.tax_id,
+                "name": customer.customer_name
+            }
         else:
-            customer_type = "A"
-
-        temp["receiver"] = {
-            "address": {
-                "country": c_address.county,
-                "governate": c_address.state,
-                "regionCity": c_address.city,
-                "street": c_address.address_line1,
-                "buildingNumber": c_address.building_number,
-                "postalCode": c_address.pincode,
-                "floor": c_address.floor,
-                "room": c_address.room,
-                "landmark": c_address.landmark,
-                "additionalInformation": c_address.additional_info
-            },
-            "type": customer_type,
-            "id": customer.tax_id,
-            "name": customer.customer_name
-        }
+            customer_type = "P"
+            temp["receiver"] = {
+                "address": {
+                    "country": "",
+                    "governate": "",
+                    "regionCity": "",
+                    "street": "",
+                    "buildingNumber": "",
+                    "postalCode": "",
+                    "floor": "",
+                    "room": "",
+                    "landmark": "",
+                    "additionalInformation": ""
+                },
+                "type": customer_type,
+                "id": "",
+                "name": customer.customer_name
+            }
 
         invoiceLines = []
         for x in invoice.items:
             item_tax_rate = frappe.db.sql(
                 """ select tax_rate from `tabItem Tax Template Detail` where parent = '{parent}' """.format(
                     parent=x.item_tax_template), as_dict=0)
-            salesTotal = x.rate + x.discount_amount
+            salesTotal = x.rate #+ x.discount_amount
             invoiceLines.append({
                 "description": x.item_name,
                 "itemType": x.eta_item_type,
@@ -147,8 +166,8 @@ def send_invoice(name):
                     "amountEGP": round(salesTotal, 5)
                 },
                 "discount": {
-                    "rate": round(x.discount_percentage, 5),
-                    "amount": round((x.discount_amount * x.qty), 5)
+                    "rate": 0,#round(x.discount_percentage, 5),
+                    "amount": 0#round((x.discount_amount * x.qty), 5)
                 },
                 "taxableItems": [
                     {
@@ -196,16 +215,16 @@ def send_invoice(name):
             total_discount += (z.discount_amount * z.qty)
             net_amount += round(z.amount, 5)
 
-        temp["netAmount"] = net_amount
+        temp["netAmount"] = round(net_amount, 5)
         temp["totalAmount"] = round(invoice.grand_total, 5)
-        temp["totalDiscountAmount"] = round(total_discount, 5)
+        temp["totalDiscountAmount"] = 0#round(total_discount, 5)
 
         temp["extraDiscountAmount"] = round(invoice.discount_amount, 5)
         temp["totalItemsDiscountAmount"] = 0#round(total_discount, 5)
 
         new_total = 0
         for v in invoice.items:
-            new_total += (v.qty * v.rate) + (v.qty * v.discount_amount)
+            new_total += (v.qty * v.rate) #+ (v.qty * v.discount_amount)
 
         temp["totalSalesAmount"] = round(new_total, 5)
 
@@ -215,7 +234,7 @@ def send_invoice(name):
                 item_tax_rate = frappe.db.sql(
                     """ select tax_rate from `tabItem Tax Template Detail` where parent = '{parent}' """.format(
                         parent=x.item_tax_template), as_dict=0)
-                salesTotal = x.rate + x.discount_amount
+                salesTotal = x.rate #+ x.discount_amount
                 invoiceLines.append({
                     "description": x.item_name,
                     "itemType": x.eta_item_type,
@@ -235,8 +254,8 @@ def send_invoice(name):
                         "amountEGP": round(salesTotal, 5)
                     },
                     "discount": {
-                        "rate": round(x.discount_percentage, 5),
-                        "amount": round((x.discount_amount * x.qty * -1), 5)
+                        "rate": 0, #round(x.discount_percentage, 5),
+                        "amount": 0 #round((x.discount_amount * x.qty * -1), 5)
                     },
                     "taxableItems": [
                         {
@@ -284,16 +303,16 @@ def send_invoice(name):
                 total_discount += (z.discount_amount * z.qty * -1)
                 net_amount += round(z.amount * -1, 5)
 
-            temp["netAmount"] = net_amount
+            temp["netAmount"] = round(net_amount, 5)
             temp["totalAmount"] = round(invoice.grand_total * -1, 5)
-            temp["totalDiscountAmount"] = round(total_discount, 5)
+            temp["totalDiscountAmount"] = 0 #round(total_discount, 5)
 
             temp["extraDiscountAmount"] = round(invoice.discount_amount * -1, 5)
             temp["totalItemsDiscountAmount"] = 0#round(total_discount, 5)
 
             new_total = 0
             for v in invoice.items:
-                new_total += (v.qty * v.rate) + (v.qty * v.discount_amount)
+                new_total += (v.qty * v.rate) #+ (v.qty * v.discount_amount)
 
             temp["totalSalesAmount"] = round(new_total * -1, 5)
 
@@ -320,6 +339,7 @@ def get_invoice(name):
     invoice = frappe.get_doc("Sales Invoice", name)
     generated_access_token = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'generated_access_token')
     environment = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'environment')
+    api_document_url = ""
     if environment == "Pre-Production":
         api_document_url = "https://api.preprod.invoicing.eta.gov.eg/api/v1/documents/"
     if environment == "Production":
@@ -379,6 +399,7 @@ def cancel_invoice(name):
     invoice = frappe.get_doc("Sales Invoice", name)
     generated_access_token = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'generated_access_token')
     environment = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'environment')
+    url = ""
     if environment == "Pre-Production":
         url = "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/state/"+invoice.uuid+"/state"
     if environment == "Production":
@@ -430,24 +451,15 @@ def list_invoices_for_signature():
     results["message"] = ""
 
     for x in invoices:
-        total_items_discount = 0
-        item_discounts = frappe.db.sql(""" select discount_amount, qty
-                                           from `tabSales Invoice Item` where parent = '{name}'
-                                       """.format(name=x.name), as_dict=1)
         invoice_data = {
             "ID": x.name,
             "DocumentNumber": x.name,
             "DocumentDate": str(x.posting_date),
+            "InvoiceTotal": x.grand_total + x.discount_amount,
+            "TotalAfterDiscount": x.grand_total,
+            "LastUpdateBy": x.owner,
+            "CustomerID_Text": x.customer_name,
         }
-        for z in item_discounts:
-            total_items_discount += z.discount_amount * z.qty
-            total = x.grand_total + x.discount_amount + total_items_discount
-        invoice_data.update({"InvoiceTotal": total,
-                             "TotalAfterDiscount": x.grand_total,
-                             "LastUpdateBy": x.owner,
-                             "CustomerID_Text": x.customer_name
-         })
-
         invoice.append(invoice_data)
         results["data"] = invoice
 
@@ -499,29 +511,46 @@ def get_invoice_details(**kwargs):
         "id": tax_id,
         "name": company
     }
-    c_address = frappe.get_doc("Address", invoice.customer_address)
     customer = frappe.get_doc("Customer", invoice.customer)
     if customer.customer_type == "Company":
+        c_address = frappe.get_doc("Address", invoice.customer_address)
         customer_type = "B"
+        temp["receiver"] = {
+            "address": {
+                "country": c_address.county,
+                "governate": c_address.state,
+                "regionCity": c_address.city,
+                "street": str(c_address.address_line1),
+                "buildingNumber": c_address.building_number,
+                "postalCode": c_address.pincode,
+                "floor": c_address.floor,
+                "room": c_address.room,
+                "landmark": c_address.landmark,
+                "additionalInformation": c_address.additional_info
+            },
+            "type": customer_type,
+            "id": customer.tax_id,
+            "name": customer.customer_name
+        }
     else:
-        customer_type = "A"
-    temp["receiver"] = {
-        "address": {
-            "country": c_address.county,
-            "governate": c_address.state,
-            "regionCity": c_address.city,
-            "street": str(c_address.address_line1),
-            "buildingNumber": c_address.building_number,
-            "postalCode": c_address.pincode,
-            "floor": c_address.floor,
-            "room": c_address.room,
-            "landmark": c_address.landmark,
-            "additionalInformation": c_address.additional_info
-        },
-        "type": customer_type,
-        "id": customer.tax_id,
-        "name": customer.customer_name
-    }
+        customer_type = "P"
+        temp["receiver"] = {
+            "address": {
+                "country": "",
+                "governate": "",
+                "regionCity": "",
+                "street": "",
+                "buildingNumber": "",
+                "postalCode": "",
+                "floor": "",
+                "room": "",
+                "landmark": "",
+                "additionalInformation": ""
+            },
+            "type": customer_type,
+            "id": "",
+            "name": customer.customer_name
+        }
 
     ## Document Type Invoice, Credit Note, Debit Note
 
@@ -580,7 +609,7 @@ def get_invoice_details(**kwargs):
         item_tax_rate = frappe.db.sql(
             """ select tax_rate from `tabItem Tax Template Detail` where parent = '{parent}' """.format(
                 parent=x.item_tax_template), as_dict=0)
-        salesTotal = x.rate + x.discount_amount
+        salesTotal = x.rate #+ x.discount_amount
         invoiceLines.append({
             "description": x.item_name,
             "itemType": x.eta_item_type,
@@ -602,8 +631,8 @@ def get_invoice_details(**kwargs):
                 #"currencyExchangeRate": 1
             },
             "discount": {
-                "rate": round(x.discount_percentage, 5),
-                "amount": round((x.discount_amount * x.qty), 5)
+                "rate": 0, #round(x.discount_percentage, 5),
+                "amount": 0, #round((x.discount_amount * x.qty), 5)
             },
             "taxableItems": [
                 {
@@ -623,14 +652,14 @@ def get_invoice_details(**kwargs):
         total_discount += (z.discount_amount * z.qty)
         net_amount += round(z.amount, 5)
 
-    temp["totalDiscountAmount"] = round(total_discount, 5)
+    temp["totalDiscountAmount"] = 0 #round(total_discount, 5)
     new_total = 0
     for v in invoice.items:
-        new_total += (v.qty * v.rate) + (v.qty * v.discount_amount)
+        new_total += (v.qty * v.rate) #+ (v.qty * v.discount_amount)
 
     temp["totalSalesAmount"] = round(new_total, 5)
 
-    temp["netAmount"] = net_amount
+    temp["netAmount"] = round(net_amount, 5)
 
     total_taxes = 0
     for y in invoice.items:

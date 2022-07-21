@@ -230,12 +230,21 @@ def siv_validate(doc, method=None):
 @frappe.whitelist()
 def siv_on_submit(doc, method=None):
     enable = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'enable')
+    customer = frappe.get_doc("Customer", doc.customer)
     if enable == 1:
         posting_date = doc.posting_date
         allowed_days = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'allowed_days')
-        if posting_date < add_to_date(utils.today(), days=-(allowed_days), as_string=True):
-            frappe.throw(
-                "You are allowed only to submit past dated invoices for {0} days before today".format(allowed_days))
+        if str(posting_date) < add_to_date(utils.today(), days=-(allowed_days), as_string=True):
+            frappe.throw( "You are allowed only to submit past dated invoices for {0} days before today".format(allowed_days))
+
+        if not customer.tax_id and customer.customer_type == "Company":
+            frappe.throw("Please Add Tax ID For Customer {0}".format(doc.customer))
+
+        for x in doc.items:
+            if not x.item_tax_template:
+                frappe.throw("Row #{0}: Please Add A Tax Template For Item {1}".format(x.idx, x.item_code))
+
+
 
 @frappe.whitelist()
 def siv_on_cancel(doc, method=None):
@@ -820,6 +829,7 @@ def item_on_update(doc, method=None):
     tax_id = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'tax_id')
     category_code = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'category_code')
     environment = frappe.db.get_value('EInvoice Settings', {'company': doc.company}, 'environment')
+    url = ""
     if environment == "Pre-Production":
         url = "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/codetypes/requests/codes"
     if environment == "Production":
@@ -869,6 +879,7 @@ def get_item_status(name):
     generated_access_token = frappe.db.get_value('EInvoice Settings', {'company': item.company},
                                                  'generated_access_token')
     environment = frappe.db.get_value('EInvoice Settings', {'company': item.company}, 'environment')
+    url = ""
     if environment == "Pre-Production":
         url = "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/codetypes/requests/my"
     if environment == "Production":
