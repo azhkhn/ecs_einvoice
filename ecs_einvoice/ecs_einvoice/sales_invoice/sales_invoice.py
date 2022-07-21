@@ -674,11 +674,31 @@ def get_invoice_details(**kwargs):
     return documents
 
 @frappe.whitelist()
-def receive_signature(name, signature):
+def receive_signature(name, signature, signed_json):
     invoice = frappe.get_doc("Sales Invoice", name)
-    invoice.signature = signature
+    generated_access_token = frappe.db.get_value('EInvoice Settings', {'company': invoice.company},
+                                                 'generated_access_token')
+    environment = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'environment')
+    api_base_url = ""
+    if environment == "Pre-Production":
+        api_base_url = "https://api.preprod.invoicing.eta.gov.eg/api/v1/documentsubmissions"
+    if environment == "Production":
+        api_base_url = "https://api.invoicing.eta.gov.eg/api/v1/documentsubmissions"
     invoice.e_signed = 1
+    invoice.json = signed_json
     invoice.save()
+
+    headers = {'content-type': 'application/json;charset=utf-8',
+               "Authorization": "Bearer " + generated_access_token,
+               "Content-Length": "376"}
+
+    response = requests.post(url=api_base_url, data=signed_json.encode('utf-8'), headers=headers)
+    sleep(5)
+    returned_data = response.json()
+    uuid_no = returned_data['acceptedDocuments'][0]['uuid']
+    invoice.uuid = uuid_no
+    invoice.save()
+    get_invoice(name)
 
     if invoice.e_signed == 1:
         response = {
