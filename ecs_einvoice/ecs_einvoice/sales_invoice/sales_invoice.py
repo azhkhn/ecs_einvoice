@@ -717,6 +717,7 @@ def receive_signature(name, signature, signed_json):
     invoice.json = signed_json
     invoice.save()
 
+    '''
     headers = {'content-type': 'application/json;charset=utf-8',
                "Authorization": "Bearer " + generated_access_token,
                "Content-Length": "376"}
@@ -728,7 +729,7 @@ def receive_signature(name, signature, signed_json):
     invoice.uuid = uuid_no
     invoice.save()
     get_invoice(name)
-
+    
     if invoice.e_signed == 1:
         response = {
             "status": "200",
@@ -745,7 +746,7 @@ def receive_signature(name, signature, signed_json):
             ]
         }
         return response
-
+    '''
 @frappe.whitelist(allow_guest=True)
 def pdf(name):
     invoice = frappe.get_doc("Sales Invoice", name)
