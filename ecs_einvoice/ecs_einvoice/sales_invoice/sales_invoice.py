@@ -717,7 +717,6 @@ def receive_signature(name, signature, signed_json):
     invoice.json = signed_json
     invoice.save()
 
-    '''
     headers = {'content-type': 'application/json;charset=utf-8',
                "Authorization": "Bearer " + generated_access_token,
                "Content-Length": "376"}
@@ -746,5 +745,42 @@ def receive_signature(name, signature, signed_json):
             ]
         }
         return response
-    '''
+    
+@frappe.whitelist(allow_guest=True)
+def pdf(name):
+    invoice = frappe.get_doc("Sales Invoice", name)
+    generated_access_token = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'generated_access_token')
+    internal_user_key = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'internal_user_key')
+    internal_user_secret = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'internal_user_secret')
+    internal_url = frappe.db.get_value('EInvoice Settings', {'company': invoice.company}, 'internal_url')
+    url = "https://api.preprod.invoicing.eta.gov.eg/api/v1.0/documents/"+invoice.uuid+"/pdf"
+    headers = {"Authorization": "Bearer " + generated_access_token,
+                "Accept": "*/*"
+                }
+    response = requests.get(url,params={"documentUUID": invoice.uuid}, headers=headers, allow_redirects=True, stream=True)
+    #file = open('facebook.pdf', 'wb').write(response.content)
+    #file = open(response, "rb")
+    #data = response.json()
+    #file.write(response.content)
+    #invoice.rem = file.write(response.content)
+    #invoice.save()
+    frappe.msgprint(response.status_code)
+
+    ###
+    headers2 = {"Authorization": "token " + internal_user_key + ":" +internal_user_secret,
+                "Content-Type" : "application/x-www-form-urlencoded",
+                "Accept": "*/*"
+                }
+    response2 = requests.post(internal_url,data={
+        "doctype": "Sales Invoice",
+        "docname": invoice.name,
+        "filename": invoice.uuid + ".pdf",
+        "filedata": file,
+        "decode_base64": 1
+        }, headers=headers2)
+    frappe.msgprint(response2.content)
+
+
+
+
 
