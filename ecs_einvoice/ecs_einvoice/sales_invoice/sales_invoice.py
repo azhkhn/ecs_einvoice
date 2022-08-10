@@ -714,7 +714,7 @@ def receive_signature(name, signature, signed_json):
     if environment == "Production":
         api_base_url = "https://api.invoicing.eta.gov.eg/api/v1/documentsubmissions"
     invoice.e_signed = 1
-    invoice.json = signed_json
+    invoice.signature = signed_json
     invoice.save()
 
     '''
